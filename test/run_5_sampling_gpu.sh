@@ -15,6 +15,7 @@ CACHE_SO3_DIR="${WORKSPACE}/so3"
 
 FILTER_SAMPLES="False"
 BASE_SEED=101
+JAX_PLATFORMS="cpu"
 
 # ============================================================
 # DO NOT EDIT BELOW UNLESS YOU KNOW WHAT YOU ARE CHANGING
@@ -32,11 +33,37 @@ PY
 
 export TMPDIR="${WORKSPACE}/tmp"
 export MPLCONFIGDIR="${WORKSPACE}/mpl"
-export JAX_PLATFORMS="cpu"
+export JAX_PLATFORMS
 export XLA_PYTHON_CLIENT_PREALLOCATE="false"
 export TF_FORCE_GPU_ALLOW_GROWTH="true"
 
 mkdir -p "${OUTPUT_DIR}" "${CACHE_EMBEDS_DIR}" "${CACHE_SO3_DIR}" "${TMPDIR}" "${MPLCONFIGDIR}"
+
+echo "Embedding stage: preparing ColabFold embeddings from SEQUENCE with JAX_PLATFORMS=${JAX_PLATFORMS}."
+echo "GPU use starts in the BioEmu sampling stage after embeddings are ready."
+
+export BIOEMU_SEQUENCE_INPUT="${SEQUENCE}"
+export BIOEMU_CACHE_EMBEDS_DIR="${CACHE_EMBEDS_DIR}"
+
+python - <<'PY'
+import os
+
+from bioemu.get_embeds import get_colabfold_embeds
+from bioemu.seq_io import check_protein_valid, parse_sequence
+
+sequence_input = os.environ["BIOEMU_SEQUENCE_INPUT"]
+cache_embeds_dir = os.environ["BIOEMU_CACHE_EMBEDS_DIR"]
+msa_file = sequence_input if sequence_input.endswith(".a3m") else None
+
+sequence = parse_sequence(sequence_input)
+check_protein_valid(sequence)
+
+print("Preparing embeddings from SEQUENCE.")
+get_colabfold_embeds(seq=sequence, cache_embeds_dir=cache_embeds_dir, msa_file=msa_file)
+print("Embeddings are ready.")
+PY
+
+echo "Sampling stage: starting BioEmu with CUDA available."
 
 bioemu-sample-local \
   "${SEQUENCE}" \

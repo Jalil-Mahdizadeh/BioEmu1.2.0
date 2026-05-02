@@ -17,9 +17,7 @@ OUTPUT_DIR="${WORKSPACE}/out/example-sampling-5"
 REQUIRE_GPU=1
 
 # Cache folders.
-# The default example sequence has cached embeddings committed in example_embeds.
-# If you change SEQUENCE, change this to "${WORKSPACE}/embeds" for a writable cache.
-CACHE_EMBEDS_DIR="${WORKSPACE}/example_embeds"
+CACHE_EMBEDS_DIR="${WORKSPACE}/embeds"
 CACHE_SO3_DIR="${WORKSPACE}/so3"
 
 # BioEmu options.
@@ -27,6 +25,7 @@ DENOISER_TYPE="dpm"
 FILTER_SAMPLES="True"
 BASE_SEED=""          # Empty means random seed.
 MSA_HOST_URL=""       # Empty means BioEmu/ColabFold default.
+PRECOMPUTE_EMBEDDINGS=1
 
 # ColabFold/JAX embedding generation.
 # Use "cpu" on this Blackwell GPU because ColabFold/JAX crashes on GPU with:
@@ -62,6 +61,42 @@ mkdir -p \
   "${CACHE_SO3_DIR}" \
   "${TMPDIR}" \
   "${MPLCONFIGDIR}"
+
+if [[ "${PRECOMPUTE_EMBEDDINGS}" == "1" ]]; then
+  echo "Embedding stage: preparing ColabFold embeddings from SEQUENCE with JAX_PLATFORMS=${JAX_PLATFORMS}."
+  echo "GPU use starts in the BioEmu sampling stage after embeddings are ready."
+
+  export BIOEMU_SEQUENCE_INPUT="${SEQUENCE}"
+  export BIOEMU_CACHE_EMBEDS_DIR="${CACHE_EMBEDS_DIR}"
+  export BIOEMU_MSA_HOST_URL="${MSA_HOST_URL}"
+
+  python - <<'PY'
+import os
+
+from bioemu.get_embeds import get_colabfold_embeds
+from bioemu.seq_io import check_protein_valid, parse_sequence
+
+sequence_input = os.environ["BIOEMU_SEQUENCE_INPUT"]
+cache_embeds_dir = os.environ["BIOEMU_CACHE_EMBEDS_DIR"]
+msa_host_url = os.environ.get("BIOEMU_MSA_HOST_URL") or None
+msa_file = sequence_input if sequence_input.endswith(".a3m") else None
+
+sequence = parse_sequence(sequence_input)
+check_protein_valid(sequence)
+
+print("Preparing embeddings from SEQUENCE.")
+print(f"Embedding cache: {cache_embeds_dir}")
+get_colabfold_embeds(
+    seq=sequence,
+    cache_embeds_dir=cache_embeds_dir,
+    msa_file=msa_file,
+    msa_host_url=msa_host_url,
+)
+print("Embeddings are ready.")
+PY
+fi
+
+echo "Sampling stage: starting BioEmu with CUDA available."
 
 args=(
   bioemu-sample-local

@@ -1,7 +1,6 @@
 # Generated BioEmu outputs and caches
 out/
 embeds/
-!example_embeds/
 so3/
 tmp/
 mpl/
