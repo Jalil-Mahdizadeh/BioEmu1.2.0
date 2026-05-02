@@ -32,7 +32,7 @@ docker run --gpus all -it --rm --entrypoint /bin/bash -v /$PWD/:/workspace bioem
 Inside the container:
 
 ```bash
-cd /workspace
+cd ../..workspace
 ```
 
 ## 3. Edit The Script You Want
