@@ -52,6 +52,11 @@ Sampling:
 bash ./run_bioemu1.2_sampling.sh
 ```
 
+The sampling script checks that PyTorch can see CUDA before it starts. The
+ColabFold embedding step is kept on CPU in the script because ColabFold/JAX can
+crash on newer Blackwell GPUs. Once embeddings are ready or cached, BioEmu
+sampling uses the GPU.
+
 Side-chain reconstruction:
 
 ```bash

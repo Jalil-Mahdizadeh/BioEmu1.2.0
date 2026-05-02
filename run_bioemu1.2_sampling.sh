@@ -14,6 +14,7 @@ SEQUENCE="TGVVKKVNRDNISLDLGNNAEAVILREDMLPRENFRPGDRVRGVLYSVRPEARGAQLFVTRSKPEMLIEL
 NUM_SAMPLES=10000
 BATCH_SIZE_100=250
 OUTPUT_DIR="${WORKSPACE}/out/example-sampling-10k"
+REQUIRE_GPU=1
 
 # Cache folders.
 CACHE_EMBEDS_DIR="${WORKSPACE}/embeds"
@@ -40,6 +41,18 @@ export MPLCONFIGDIR="${WORKSPACE}/mpl"
 export JAX_PLATFORMS
 export XLA_PYTHON_CLIENT_PREALLOCATE="false"
 export TF_FORCE_GPU_ALLOW_GROWTH="true"
+
+if [[ "${REQUIRE_GPU}" == "1" ]]; then
+  python - <<'PY'
+import sys
+import torch
+
+if not torch.cuda.is_available():
+    sys.exit("CUDA is not available. Start Docker with: docker run --gpus all ...")
+
+print(f"BioEmu sampling will use CUDA device: {torch.cuda.get_device_name(0)}")
+PY
+fi
 
 mkdir -p \
   "${OUTPUT_DIR}" \

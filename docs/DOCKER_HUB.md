@@ -24,6 +24,10 @@ cd /workspace
 bash ./test/run_all.sh
 ```
 
+The sampling scripts check CUDA through PyTorch before sampling. ColabFold/JAX
+embedding generation is left on CPU for compatibility with newer GPUs; BioEmu
+sampling uses CUDA once embeddings are ready or cached.
+
 ## Docker Hub Description
 
 Short description:
