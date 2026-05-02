@@ -26,6 +26,11 @@ docker build \
   --build-arg BIOEMU_MODEL=bioemu-v1.2 \
   --build-arg PRELOAD_COLABFOLD=1 \
   --build-arg PREINSTALL_HPACKER=1 \
+  --build-arg COLABFOLD_JAX_VERSION=0.5.3 \
+  --build-arg COLABFOLD_HAIKU_VERSION=0.0.16 \
   -t bioemu_full_slim:latest \
   .
 ```
+
+The ColabFold JAX pins are used so embedding generation can run on CUDA while
+remaining compatible with ColabFold 1.5.4.

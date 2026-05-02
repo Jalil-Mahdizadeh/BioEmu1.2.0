@@ -56,9 +56,11 @@ bash ./run_bioemu1.2_sampling.sh
 ```
 
 The sampling script first prepares embeddings from `SEQUENCE` into
-`/workspace/embeds`. That embedding stage may be CPU-only because ColabFold/JAX
-can crash on newer Blackwell GPUs. After embeddings are ready, the script runs
-BioEmu sampling and checks that PyTorch can see CUDA.
+`/workspace/embeds`, then runs BioEmu sampling. Both stages use the GPU by
+default when the image includes the ColabFold JAX GPU stack. If embedding
+generation crashes on an older image or unsupported GPU, set `JAX_PLATFORMS` to
+`cpu` in the script; BioEmu sampling will still use CUDA after embeddings are
+ready.
 
 Side-chain reconstruction:
 

@@ -14,6 +14,8 @@ ARG BIOEMU_MODEL=bioemu-v1.2
 ARG PRELOAD_BIOEMU_MODEL=1
 ARG PRELOAD_COLABFOLD=1
 ARG PREINSTALL_HPACKER=1
+ARG COLABFOLD_JAX_VERSION=0.5.3
+ARG COLABFOLD_HAIKU_VERSION=0.0.16
 
 ENV CONDA_DIR=/opt/conda \
     PATH=/opt/conda/bin:/opt/conda/condabin:$PATH \
@@ -25,7 +27,7 @@ ENV CONDA_DIR=/opt/conda \
     HPACKER_ENV_NAME=hpacker \
     HPACKER_VENV_DIR=/opt/bioemu/hpacker_venv \
     HPACKER_REPO_DIR=/opt/bioemu/hpacker-src \
-    JAX_PLATFORMS=cpu \
+    JAX_PLATFORMS=cuda \
     XLA_PYTHON_CLIENT_PREALLOCATE=false \
     TF_FORCE_GPU_ALLOW_GROWTH=true \
     MPLCONFIGDIR=/tmp/mpl \
@@ -120,6 +122,13 @@ else:
     ])
     print(f"Preloaded ColabFold AlphaFold2 params into {data_dir}")
 PY
+  uv pip install --python "${BIOEMU_COLABFOLD_DIR}/bin/python" --upgrade \
+    "jax[cuda12]==${COLABFOLD_JAX_VERSION}" \
+    "jaxlib==${COLABFOLD_JAX_VERSION}" \
+    "jax-cuda12-plugin==${COLABFOLD_JAX_VERSION}" \
+    "jax-cuda12-pjrt==${COLABFOLD_JAX_VERSION}" \
+    "dm-haiku==${COLABFOLD_HAIKU_VERSION}" \
+    "numpy<2"
 fi
 BASH
 

@@ -28,10 +28,10 @@ MSA_HOST_URL=""       # Empty means BioEmu/ColabFold default.
 PRECOMPUTE_EMBEDDINGS=1
 
 # ColabFold/JAX embedding generation.
-# Use "cpu" on this Blackwell GPU because ColabFold/JAX crashes on GPU with:
-#   Unsupported conversion from bf16 to f16
-# BioEmu sampling still uses the GPU after embeddings are ready or cached.
-JAX_PLATFORMS="cpu"
+# Use "cuda" with the Dockerfile/Hub image that includes the ColabFold JAX
+# GPU stack. If an older image crashes during embedding generation, set this
+# to "cpu" and BioEmu sampling will still use the GPU after embeddings finish.
+JAX_PLATFORMS="cuda"
 
 # ============================================================
 # DO NOT EDIT BELOW UNLESS YOU KNOW WHAT YOU ARE CHANGING

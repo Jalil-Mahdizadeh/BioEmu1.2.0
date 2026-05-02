@@ -15,7 +15,7 @@ CACHE_SO3_DIR="${WORKSPACE}/so3"
 
 FILTER_SAMPLES="False"
 BASE_SEED=101
-JAX_PLATFORMS="cpu"
+JAX_PLATFORMS="cuda"
 
 # ============================================================
 # DO NOT EDIT BELOW UNLESS YOU KNOW WHAT YOU ARE CHANGING
