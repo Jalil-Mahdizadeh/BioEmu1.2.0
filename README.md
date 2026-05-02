@@ -11,8 +11,8 @@ Ready-to-use image:
 Use the Docker Hub image:
 
 ```bash
-docker pull 951753jalil/bioemu:latest
-docker tag 951753jalil/bioemu:latest bioemu_full_slim:latest
+docker pull 951753jalil/bioemu:1.2.0
+docker tag 951753jalil/bioemu:1.2.0 bioemu_full_slim:1.2.0
 ```
 
 Or build it yourself:
@@ -26,7 +26,7 @@ docker build -t bioemu_full_slim:latest .
 From this folder on the host machine:
 
 ```bash
-docker run --gpus all -it --rm --entrypoint /bin/bash -v /$PWD/:/workspace bioemu_full_slim:latest
+docker run --gpus all -it --rm --entrypoint /bin/bash -v /$PWD/:/workspace bioemu_full_slim:1.2.0
 ```
 
 Inside the container:
