@@ -18,7 +18,7 @@ docker tag 951753jalil/bioemu:1.2.0 bioemu_full_slim:1.2.0
 Or build it yourself:
 
 ```bash
-docker build -t bioemu_full_slim:latest .
+docker build -t bioemu_full_slim:1.2.0 .
 ```
 
 ## 2. Start The Container
