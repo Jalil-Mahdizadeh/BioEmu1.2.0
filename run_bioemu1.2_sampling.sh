@@ -25,7 +25,10 @@ FILTER_SAMPLES="True"
 BASE_SEED=""          # Empty means random seed.
 MSA_HOST_URL=""       # Empty means BioEmu/ColabFold default.
 
-# Keep ColabFold/JAX on CPU so the GPU is reserved for BioEmu sampling.
+# ColabFold/JAX embedding generation.
+# Use "cpu" on this Blackwell GPU because ColabFold/JAX crashes on GPU with:
+#   Unsupported conversion from bf16 to f16
+# BioEmu sampling still uses the GPU after embeddings are ready or cached.
 JAX_PLATFORMS="cpu"
 
 # ============================================================
