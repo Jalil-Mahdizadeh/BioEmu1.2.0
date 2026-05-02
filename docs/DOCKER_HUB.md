@@ -26,7 +26,9 @@ bash ./test/run_all.sh
 
 The sampling scripts check CUDA through PyTorch before sampling. ColabFold/JAX
 embedding generation is left on CPU for compatibility with newer GPUs; BioEmu
-sampling uses CUDA once embeddings are ready or cached.
+sampling uses CUDA once embeddings are ready or cached. The main example script
+uses committed cached embeddings from `example_embeds/`, so a fresh clone should
+reach GPU sampling immediately.
 
 ## Docker Hub Description
 

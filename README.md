@@ -44,6 +44,11 @@ Open one of these files and edit the values in the `EDIT THIS SECTION` block:
 - `test/run_5_sampling_gpu.sh`
 - `test/run_one_sidechain_cpu.sh`
 
+The default sampling script is set to five samples and uses `example_embeds/`,
+which is committed for the included example sequence. If you change `SEQUENCE`,
+also change `CACHE_EMBEDS_DIR` to `/workspace/embeds` so BioEmu can create a new
+embedding cache.
+
 ## 4. Run
 
 Sampling:
@@ -53,9 +58,11 @@ bash ./run_bioemu1.2_sampling.sh
 ```
 
 The sampling script checks that PyTorch can see CUDA before it starts. The
-ColabFold embedding step is kept on CPU in the script because ColabFold/JAX can
-crash on newer Blackwell GPUs. Once embeddings are ready or cached, BioEmu
-sampling uses the GPU.
+default example uses cached embeddings, so it should go directly to GPU
+sampling. For a new sequence, ColabFold embedding generation may run first; that
+stage is CPU-only in the script because ColabFold/JAX can crash on newer
+Blackwell GPUs. Once embeddings are ready or cached, BioEmu sampling uses the
+GPU.
 
 Side-chain reconstruction:
 
@@ -87,5 +94,6 @@ Generated files are ignored by git:
 - `run_bioemu1.2_sampling.sh`: main sampling script.
 - `run_bioemu1.2_sidechain.sh`: main side-chain script.
 - `test/`: short image validation scripts.
+- `example_embeds/`: cached embeddings for the default example sequence.
 - `Dockerfile`: build your own image.
 - `requirements.txt`: Python package used by the Dockerfile.
