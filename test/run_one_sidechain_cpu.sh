@@ -1,20 +1,39 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(CDPATH= cd -- "${SCRIPT_DIR}/.." && pwd)"
+# ============================================================
+# EDIT THIS SECTION
+# ============================================================
 
-SAMPLE_DIR="${BIOEMU_TEST_SAMPLE_DIR:-${ROOT_DIR}/test/output/sampling-5}"
-INPUT_DIR="${ROOT_DIR}/test/output/sidechain-input"
-SIDECHAIN_OUT="${BIOEMU_TEST_SIDECHAIN_OUT:-${ROOT_DIR}/test/output/sidechain-cpu}"
+WORKSPACE="/workspace"
+SAMPLE_DIR="${WORKSPACE}/test/output/sampling-5"
+INPUT_DIR="${WORKSPACE}/test/output/sidechain-input"
+OUTPATH="${WORKSPACE}/test/output/sidechain-cpu"
+PREFIX="smoke"
+
+# CPU by default for this test.
+CUDA_VISIBLE_DEVICES=""
+
+# Side-chain reconstruction only.
+MD_EQUIL=0
+MD_PROTOCOL="local_minimization"
+SIMTIME_NS=0
+
+# ============================================================
+# DO NOT EDIT BELOW UNLESS YOU KNOW WHAT YOU ARE CHANGING
+# ============================================================
 
 if [[ ! -s "${SAMPLE_DIR}/topology.pdb" || ! -s "${SAMPLE_DIR}/samples.xtc" ]]; then
   echo "Missing sampling output in ${SAMPLE_DIR}."
-  echo "Run: bash ${SCRIPT_DIR}/run_5_sampling_gpu.sh"
+  echo "Run: bash ./test/run_5_sampling_gpu.sh"
   exit 1
 fi
 
-mkdir -p "${INPUT_DIR}" "${SIDECHAIN_OUT}"
+export CUDA_VISIBLE_DEVICES
+export TMPDIR="${WORKSPACE}/tmp"
+export MPLCONFIGDIR="${WORKSPACE}/mpl"
+
+mkdir -p "${INPUT_DIR}" "${OUTPATH}" "${TMPDIR}" "${MPLCONFIGDIR}"
 
 python - <<PY
 from pathlib import Path
@@ -22,7 +41,6 @@ import mdtraj as md
 
 sample_dir = Path(${SAMPLE_DIR@Q})
 out_dir = Path(${INPUT_DIR@Q})
-out_dir.mkdir(parents=True, exist_ok=True)
 
 traj = md.load_xtc(str(sample_dir / "samples.xtc"), top=str(sample_dir / "topology.pdb"))
 one_frame = traj[0]
@@ -31,18 +49,23 @@ one_frame.save_pdb(str(out_dir / "topology.pdb"))
 print(f"Wrote one-frame side-chain input with {one_frame.n_atoms} atoms")
 PY
 
-if [[ "${BIOEMU_TEST_SIDECHAIN_USE_GPU:-0}" != "1" ]]; then
-  export CUDA_VISIBLE_DEVICES=""
+args=(
+  bioemu-sidechain-relax
+  --pdb-path "${INPUT_DIR}/topology.pdb"
+  --xtc-path "${INPUT_DIR}/one_frame.xtc"
+  --outpath "${OUTPATH}"
+  --prefix "${PREFIX}"
+  --simtime-ns "${SIMTIME_NS}"
+)
+
+if [[ "${MD_EQUIL}" == "1" ]]; then
+  args+=(--md-equil --md-protocol "${MD_PROTOCOL}")
+else
+  args+=(--no-md-equil)
 fi
 
-export BIOEMU_PDB_PATH="${INPUT_DIR}/topology.pdb"
-export BIOEMU_XTC_PATH="${INPUT_DIR}/one_frame.xtc"
-export BIOEMU_SIDECHAIN_OUTPATH="${SIDECHAIN_OUT}"
-export BIOEMU_SIDECHAIN_PREFIX="${BIOEMU_TEST_SIDECHAIN_PREFIX:-smoke}"
-export BIOEMU_MD_EQUIL="${BIOEMU_TEST_MD_EQUIL:-0}"
+"${args[@]}"
 
-bash "${ROOT_DIR}/run_bioemu1.2_sidechain.sh"
-
-test -s "${SIDECHAIN_OUT}/${BIOEMU_SIDECHAIN_PREFIX}_sidechain_rec.pdb"
-test -s "${SIDECHAIN_OUT}/${BIOEMU_SIDECHAIN_PREFIX}_sidechain_rec.xtc"
-echo "Side-chain smoke test wrote ${SIDECHAIN_OUT}"
+test -s "${OUTPATH}/${PREFIX}_sidechain_rec.pdb"
+test -s "${OUTPATH}/${PREFIX}_sidechain_rec.xtc"
+echo "Side-chain smoke test wrote ${OUTPATH}"

@@ -1,29 +1,14 @@
-# BioEmu Smoke Tests
+# Smoke Test
 
-Run these tests inside a BioEmu container with this repository mounted as
-`/work`.
-
-```bash
-bash test/run_all.sh
-```
-
-The tests do two things:
-
-- `run_5_sampling_gpu.sh` creates five BioEmu samples and requires GPU access by
-  default.
-- `run_one_sidechain_cpu.sh` reconstructs side chains for one sampled frame and
-  uses CPU by default.
-
-Outputs are written under `test/output/`, which is ignored by git.
-
-Useful overrides:
+Run inside the container from `/workspace`:
 
 ```bash
-BIOEMU_TEST_REQUIRE_GPU=0 bash test/run_5_sampling_gpu.sh
-BIOEMU_TEST_NUM_SAMPLES=10 bash test/run_5_sampling_gpu.sh
-BIOEMU_TEST_SIDECHAIN_USE_GPU=1 bash test/run_one_sidechain_cpu.sh
-BIOEMU_TEST_MD_EQUIL=1 bash test/run_one_sidechain_cpu.sh
+bash ./test/run_all.sh
 ```
 
-The sampling test uses `test/data/test_sequence.a3m`, so it does not need a
-remote MSA search for the smoke-test sequence.
+The test scripts have editable parameters at the top:
+
+- `test/run_5_sampling_gpu.sh`: five BioEmu samples, GPU required.
+- `test/run_one_sidechain_cpu.sh`: one side-chain reconstruction, CPU by default.
+
+Outputs go to `test/output/`.

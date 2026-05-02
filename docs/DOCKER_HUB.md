@@ -1,72 +1,47 @@
-# Docker Hub Image
+# Docker Hub
 
-A ready-to-use BioEmu Docker image is available at:
+Ready-to-use image:
 
 [https://hub.docker.com/r/951753jalil/bioemu](https://hub.docker.com/r/951753jalil/bioemu)
 
-## Pull And Run
+Pull and tag it with the name used in this repository:
 
 ```bash
 docker pull 951753jalil/bioemu:latest
-docker run --rm -it --gpus all -v "${PWD}:/work" -w /work 951753jalil/bioemu:latest bash
+docker tag 951753jalil/bioemu:latest bioemu_full_slim:latest
 ```
 
-All repository scripts are intended to run inside the container:
+Start the container from the repository folder:
 
 ```bash
-bash test/run_all.sh
-bash run_bioemu1.2_sampling.sh
-bash run_bioemu1.2_sidechain.sh
+docker run --gpus all -it --rm --entrypoint /bin/bash -v /$PWD/:/workspace bioemu_full_slim:latest
 ```
 
-## Short Description
+Inside the container:
+
+```bash
+cd /workspace
+bash ./test/run_all.sh
+```
+
+## Docker Hub Description
+
+Short description:
 
 ```text
 BioEmu Docker image for GPU sampling, ColabFold embeddings, HPacker side chains, and OpenMM relaxation.
 ```
 
-## Longer Description
+Long description:
 
-This image provides a BioEmu runtime for protein conformational ensemble
-generation. It supports BioEmu backbone sampling from raw sequences, FASTA
-files, or A3M files; cached ColabFold embeddings; GPU-enabled sampling; HPacker
-side-chain reconstruction; and optional OpenMM minimization or MD
-equilibration.
-
-The repository scripts assume the container is already running and the project
-folder is mounted as `/work`.
-
-## Publish Or Update The Image
-
-Build locally from this repository:
-
-```bash
-docker build -t 951753jalil/bioemu:latest .
+```text
+BioEmu Docker image for protein conformational ensemble generation. Supports BioEmu backbone sampling from raw sequences, FASTA files, or A3M files; cached ColabFold embeddings; GPU sampling; HPacker side-chain reconstruction; and optional OpenMM minimization or MD equilibration.
 ```
 
-Log in:
+## Push
 
 ```bash
 docker login
-```
-
-Push:
-
-```bash
+docker tag bioemu_full_slim:latest 951753jalil/bioemu:latest
 docker push 951753jalil/bioemu:latest
-```
-
-Optional version tag:
-
-```bash
-docker tag 951753jalil/bioemu:latest 951753jalil/bioemu:1.2
-docker push 951753jalil/bioemu:1.2
-```
-
-Validate after pulling:
-
-```bash
-docker pull 951753jalil/bioemu:latest
-docker run --rm -it --gpus all -v "${PWD}:/work" -w /work 951753jalil/bioemu:latest bash
-bash test/run_all.sh
 ```

@@ -1,29 +1,53 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(CDPATH= cd -- "${SCRIPT_DIR}/.." && pwd)"
+# ============================================================
+# EDIT THIS SECTION
+# ============================================================
 
-if [[ "${BIOEMU_TEST_REQUIRE_GPU:-1}" == "1" ]]; then
-  python - <<'PY'
+WORKSPACE="/workspace"
+SEQUENCE="${WORKSPACE}/test/data/test_sequence.a3m"
+NUM_SAMPLES=5
+BATCH_SIZE_100=5
+OUTPUT_DIR="${WORKSPACE}/test/output/sampling-5"
+CACHE_EMBEDS_DIR="${WORKSPACE}/embeds"
+CACHE_SO3_DIR="${WORKSPACE}/so3"
+
+FILTER_SAMPLES="False"
+BASE_SEED=101
+
+# ============================================================
+# DO NOT EDIT BELOW UNLESS YOU KNOW WHAT YOU ARE CHANGING
+# ============================================================
+
+python - <<'PY'
 import sys
 import torch
 
 if not torch.cuda.is_available():
-    sys.exit("CUDA is not available. Start the container with GPU access or set BIOEMU_TEST_REQUIRE_GPU=0.")
+    sys.exit("CUDA is not available. Start the container with --gpus all.")
 
 print(f"CUDA device: {torch.cuda.get_device_name(0)}")
 PY
-fi
 
-export BIOEMU_SEQUENCE="${BIOEMU_TEST_SEQUENCE:-${ROOT_DIR}/test/data/test_sequence.a3m}"
-export BIOEMU_NUM_SAMPLES="${BIOEMU_TEST_NUM_SAMPLES:-5}"
-export BIOEMU_OUTPUT_DIR="${BIOEMU_TEST_SAMPLE_OUT:-${ROOT_DIR}/test/output/sampling-5}"
-export BIOEMU_BATCH_SIZE_100="${BIOEMU_TEST_BATCH_SIZE_100:-5}"
-export BIOEMU_EXTRA_ARGS="${BIOEMU_EXTRA_ARGS:---filter_samples False --base_seed 101}"
+export TMPDIR="${WORKSPACE}/tmp"
+export MPLCONFIGDIR="${WORKSPACE}/mpl"
+export JAX_PLATFORMS="cpu"
+export XLA_PYTHON_CLIENT_PREALLOCATE="false"
+export TF_FORCE_GPU_ALLOW_GROWTH="true"
 
-bash "${ROOT_DIR}/run_bioemu1.2_sampling.sh"
+mkdir -p "${OUTPUT_DIR}" "${CACHE_EMBEDS_DIR}" "${CACHE_SO3_DIR}" "${TMPDIR}" "${MPLCONFIGDIR}"
 
-test -s "${BIOEMU_OUTPUT_DIR}/topology.pdb"
-test -s "${BIOEMU_OUTPUT_DIR}/samples.xtc"
-echo "Sampling smoke test wrote ${BIOEMU_OUTPUT_DIR}"
+bioemu-sample-local \
+  "${SEQUENCE}" \
+  "${NUM_SAMPLES}" \
+  "${OUTPUT_DIR}" \
+  --cache_embeds_dir "${CACHE_EMBEDS_DIR}" \
+  --cache_so3_dir "${CACHE_SO3_DIR}" \
+  --batch_size_100 "${BATCH_SIZE_100}" \
+  --filter_samples "${FILTER_SAMPLES}" \
+  --base_seed "${BASE_SEED}"
+
+test -s "${OUTPUT_DIR}/topology.pdb"
+test -s "${OUTPUT_DIR}/samples.xtc"
+echo "Sampling smoke test wrote ${OUTPUT_DIR}"
