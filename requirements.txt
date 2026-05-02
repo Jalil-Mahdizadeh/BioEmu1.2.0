@@ -1,0 +1,10 @@
+# Runtime Python dependencies for building the Docker image from public sources.
+#
+# `bioemu[cuda]` installs the GPU-capable sampling stack, including JAX CUDA
+# support used by BioEmu's embedding path.
+# `bioemu[md]` installs OpenMM support for side-chain relaxation.
+#
+# Update this pin deliberately if you want to track a newer upstream BioEmu
+# release. The wrapper scripts default to the bioemu-v1.2 model, which remains
+# selectable through the public package.
+bioemu[cuda,md]==1.3.1

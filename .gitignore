@@ -1,0 +1,30 @@
+# Generated BioEmu outputs and caches
+out/
+embeds/
+so3/
+tmp/
+mpl/
+cg_coefficients/
+test/output/
+
+# Large local image artifacts
+*.sif
+*.simg
+*.tar
+*.tar.gz
+*.tgz
+
+# Python and editor noise
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.idea/
+.vscode/
+
+# OS metadata
+.DS_Store
+Thumbs.db
