@@ -5,6 +5,7 @@ so3/
 tmp/
 mpl/
 cg_coefficients/
+jax_compile_cache/
 test/output/
 
 # Large local image artifacts

@@ -25,10 +25,10 @@ bash ./test/run_all.sh
 ```
 
 The sampling scripts prepare ColabFold embeddings from the input sequence, then
-run BioEmu sampling. The current image is expected to support GPU embeddings and
-GPU BioEmu sampling. If embedding generation fails on an older image or
-unsupported GPU, set `JAX_PLATFORMS=cpu` in the sampling script; the BioEmu
-sampling stage will still use CUDA.
+run BioEmu sampling on CUDA. The image supports CUDA embeddings, but the scripts
+default embedding generation to CPU because one-off ColabFold/JAX CUDA runs can
+be slower due to XLA compilation. Set `JAX_PLATFORMS="cuda"` in the sampling
+script to test or reuse the JAX GPU path.
 
 ## Docker Hub Description
 

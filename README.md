@@ -56,11 +56,11 @@ bash ./run_bioemu1.2_sampling.sh
 ```
 
 The sampling script first prepares embeddings from `SEQUENCE` into
-`/workspace/embeds`, then runs BioEmu sampling. Both stages use the GPU by
-default when the image includes the ColabFold JAX GPU stack. If embedding
-generation crashes on an older image or unsupported GPU, set `JAX_PLATFORMS` to
-`cpu` in the script; BioEmu sampling will still use CUDA after embeddings are
-ready.
+`/workspace/embeds`, then runs BioEmu sampling on CUDA. Embedding generation is
+CPU by default because one-off ColabFold/JAX GPU embedding jobs can be slower
+than CPU due to first-run XLA compilation. To test GPU embeddings, set
+`JAX_PLATFORMS="cuda"` in the script. Repeated CUDA embedding runs can reuse
+`/workspace/jax_compile_cache`.
 
 Side-chain reconstruction:
 
@@ -83,6 +83,7 @@ Generated files are ignored by git:
 - `out/`
 - `embeds/`
 - `so3/`
+- `jax_compile_cache/`
 - `tmp/`
 - `mpl/`
 - `test/output/`

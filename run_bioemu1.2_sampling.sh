@@ -28,10 +28,11 @@ MSA_HOST_URL=""       # Empty means BioEmu/ColabFold default.
 PRECOMPUTE_EMBEDDINGS=1
 
 # ColabFold/JAX embedding generation.
-# Use "cuda" with the Dockerfile/Hub image that includes the ColabFold JAX
-# GPU stack. If an older image crashes during embedding generation, set this
-# to "cpu" and BioEmu sampling will still use the GPU after embeddings finish.
-JAX_PLATFORMS="cuda"
+# "cpu" is usually faster for a one-off sequence because ColabFold/JAX GPU
+# embedding generation has a large first-run compile cost. Set this to "cuda"
+# for repeated embedding jobs if you want to use the JAX GPU path.
+JAX_PLATFORMS="cpu"
+JAX_COMPILATION_CACHE_DIR="${WORKSPACE}/jax_compile_cache"
 
 # ============================================================
 # DO NOT EDIT BELOW UNLESS YOU KNOW WHAT YOU ARE CHANGING
@@ -40,6 +41,8 @@ JAX_PLATFORMS="cuda"
 export TMPDIR="${WORKSPACE}/tmp"
 export MPLCONFIGDIR="${WORKSPACE}/mpl"
 export JAX_PLATFORMS
+export JAX_COMPILATION_CACHE_DIR
+export JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS="0"
 export XLA_PYTHON_CLIENT_PREALLOCATE="false"
 export TF_FORCE_GPU_ALLOW_GROWTH="true"
 
@@ -59,12 +62,17 @@ mkdir -p \
   "${OUTPUT_DIR}" \
   "${CACHE_EMBEDS_DIR}" \
   "${CACHE_SO3_DIR}" \
+  "${JAX_COMPILATION_CACHE_DIR}" \
   "${TMPDIR}" \
   "${MPLCONFIGDIR}"
 
 if [[ "${PRECOMPUTE_EMBEDDINGS}" == "1" ]]; then
   echo "Embedding stage: preparing ColabFold embeddings from SEQUENCE with JAX_PLATFORMS=${JAX_PLATFORMS}."
-  echo "GPU use starts in the BioEmu sampling stage after embeddings are ready."
+  if [[ "${JAX_PLATFORMS}" == "cuda" ]]; then
+    echo "CUDA embedding is enabled; the first run can be slow because JAX compiles the model."
+  else
+    echo "Embedding is using CPU; BioEmu sampling will use CUDA after embeddings are ready."
+  fi
 
   export BIOEMU_SEQUENCE_INPUT="${SEQUENCE}"
   export BIOEMU_CACHE_EMBEDS_DIR="${CACHE_EMBEDS_DIR}"

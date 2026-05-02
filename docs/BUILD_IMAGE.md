@@ -32,5 +32,8 @@ docker build \
   .
 ```
 
-The ColabFold JAX pins are used so embedding generation can run on CUDA while
-remaining compatible with ColabFold 1.5.4.
+The ColabFold JAX pins allow embedding generation to run on CUDA while remaining
+compatible with ColabFold 1.5.4. The runner scripts still default embedding
+generation to CPU because one-off CUDA embedding runs can be slower due to XLA
+compilation; set `JAX_PLATFORMS="cuda"` in the sampling script when you want to
+test or reuse the JAX GPU path.
